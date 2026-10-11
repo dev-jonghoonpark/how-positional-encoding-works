@@ -123,6 +123,16 @@ nav.toc a:hover{color:var(--s1)}
 footer{margin-top:70px;padding-top:22px;border-top:1px solid var(--border);color:var(--muted);font-size:13px}
 footer a{color:var(--text-secondary)}
 .refs{font-size:13px;color:var(--text-secondary);line-height:1.7}
+.easy{background:var(--surface-1);border:1px solid var(--border);border-left:3px solid var(--s3);border-radius:0 14px 14px 0;padding:18px 20px;margin:24px 0}
+.easy .lbl{font-size:11.5px;font-weight:700;letter-spacing:0.1em;color:var(--s3);display:block;margin-bottom:2px}
+.easy h3{margin:0 0 8px}
+.easy ol{padding-left:20px}
+.easy .big{font-size:17px;text-align:center;margin:10px 0;font-weight:650}
+.sw{display:grid;grid-template-columns:150px 1fr 64px;gap:8px 10px;align-items:center;font-size:13px;margin-top:12px}
+.sw .bar{position:relative;height:18px;background:var(--page);border:1px solid var(--border);border-radius:4px}
+.sw .bar i{position:absolute;top:0;bottom:0;border-radius:3px}
+.sw .bar:after{content:'';position:absolute;left:50%;top:-3px;bottom:-3px;border-left:1px solid var(--axis)}
+.sw b{font-variant-numeric:tabular-nums;text-align:right}
 /* 데모 1 */
 .attn{display:grid;grid-template-columns:auto 1fr auto;gap:6px 12px;align-items:center;margin-top:12px;font-size:13px}
 .attn .tk{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:650;min-width:56px}
@@ -276,6 +286,23 @@ footer a{color:var(--text-secondary)}
   <span class="note">오른쪽에 pos가 없습니다. 두 바늘이 이루는 각도의 코사인을 다 더한 값이라, 절대 위치가 아니라 두 단어 사이의 거리 k에만 의존합니다.</span>
 </div>
 <p>sin만 쓰면 사정이 다릅니다. pos=0이면 벡터 전체가 0이고, 위치마다 신호 세기가 들쭉날쭉하며, 내적도 기준 위치에 따라 모양이 바뀝니다.</p>
+
+<div class="easy">
+  <span class="lbl">처음 보는 분을 위해</span>
+  <h3>cos(A − B) 공식은 무엇을 말하나</h3>
+  <p>고등학교에서 배운 이 공식이 위의 내용을 전부 설명합니다.</p>
+  <p class="big">\(\cos(A-B) = \cos A\cos B + \sin A\sin B\)</p>
+  <ol>
+    <li><strong>시계 바늘 두 개를 떠올립니다.</strong> 하나는 각도 A, 다른 하나는 각도 B만큼 돌아가 있습니다. 위치 인코딩에서는 두 단어의 바늘입니다.</li>
+    <li><strong>오른쪽은 “두 바늘이 얼마나 같은 쪽을 보는가”입니다.</strong> 세로끼리 곱하고(cos·cos), 가로끼리 곱해서(sin·sin) 더한 값, 즉 내적입니다. 같은 방향이면 1, 직각이면 0, 정반대면 −1이 나옵니다.</li>
+    <li><strong>왼쪽은 그 값이 두 바늘 사이의 각도(A − B)만으로 정해진다고 말합니다.</strong> 바늘이 각각 어디를 가리키는지는 상관없습니다.</li>
+    <li><strong>위치 인코딩에서 사이각은 “몇 칸 떨어졌나”(k)로 정해집니다.</strong> 5번과 8번 단어든 100번과 103번 단어든, 3칸 차이면 사이각이 같고 내적도 같습니다.</li>
+  </ol>
+  <p><strong>sin과 cos가 둘 다 필요한 이유:</strong> 오른쪽 두 항은 따로 보면 바늘 위치에 따라 출렁입니다. 그런데 한쪽이 줄면 다른 쪽이 그만큼 늘어나는 <strong>시소</strong>처럼 움직여서, 더한 값은 늘 일정합니다. 한쪽만 쓰면(sin만 쓰면) 출렁이는 값이 그대로 남습니다. 아래 슬라이더로 확인해 보세요.</p>
+  <div class="ctrl" style="max-width:420px"><label>두 바늘을 함께 돌리기 (기준 위치 p) <b id="swpv">0</b></label><input type="range" id="swp" min="0" max="60" step="1" value="0"></div>
+  <p class="cap" style="color:var(--muted);font-size:13px;margin:6px 0 0">두 단어는 항상 1칸 떨어져 있습니다(ω = 0.5, k = 1).</p>
+  <div class="sw" id="swout"></div>
+</div>
 
 <div class="demo">
   <h4>데모 6 · 벡터 길이와 내적 곡선</h4>
@@ -553,6 +580,16 @@ function drawD6(){
 }
 $('#d6mode').onclick=function(){d6sin=!d6sin;this.setAttribute('aria-pressed',d6sin);this.textContent='sin만 쓰기: '+(d6sin?'켬':'끔');drawD6();};
 
+/* ══════ 6절 시소 ══════ */
+function drawSW(){
+  var p=+$('#swp').value,w=0.5,k=1,A=w*(p+k),B=w*p;$('#swpv').textContent=p;
+  var ss=Math.sin(A)*Math.sin(B),cc=Math.cos(A)*Math.cos(B),rows=[
+    ['가로끼리 곱 sin·sin',ss,css('--s1')],['세로끼리 곱 cos·cos',cc,css('--s2')],['더한 값 = cos(A−B)',ss+cc,css('--s3')]];
+  $('#swout').innerHTML=rows.map(function(r){var v=r[1],L=v<0?50+v*50:50,W=Math.abs(v)*50;
+    return '<span>'+r[0]+'</span><div class="bar"><i style="left:'+L+'%;width:'+W+'%;background:'+r[2]+'"></i></div><b>'+f(v,3)+'</b>';}).join('');
+}
+$('#swp').oninput=drawSW;
+
 /* ══════ 표 7 ══════ */
 (function(){
   var d=512,rows=[0,16,32,64,128,192,255],tb=$('#t7 tbody');
@@ -615,7 +652,7 @@ var QZ=[
 })();
 
 /* ══════ 테마·초기화 ══════ */
-function drawAll(){drawD1();drawD2();drawD3();drawD4();drawD5();drawD5b();drawD6();drawD8();}
+function drawAll(){drawSW();drawD1();drawD2();drawD3();drawD4();drawD5();drawD5b();drawD6();drawD8();}
 var tbtn=$('#themeBtn');
 if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.setAttribute('data-theme','dark');
 function syncBtn(){tbtn.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'◑ 라이트':'◐ 다크';}
