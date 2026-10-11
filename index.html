@@ -227,6 +227,20 @@ footer a{color:var(--text-secondary)}
 <!-- ───────── 4 ───────── -->
 <h2 id="s4">4. 시계 바늘: 원 위의 한 점</h2>
 <p>\(\sin^2\theta + \cos^2\theta = 1\)이므로 \((\sin\theta, \cos\theta)\)는 반지름 1인 원 위의 점입니다. 가로 좌표를 sin, 세로 좌표를 cos로 두면 \(\theta = 0\)일 때 점은 <strong>12시</strong>에 있고, θ가 커질수록 <strong>시계 방향</strong>으로 돕니다. 위치 인코딩의 한 쌍은 문자 그대로 시계 바늘입니다.</p>
+<div class="demo">
+  <h4>그림 · 왜 (sin θ, cos θ)는 원 위에 있나</h4>
+  <p class="cap">원 위의 점을 끌거나 슬라이더를 움직여 보세요. 점에서 내린 가로 길이가 sin θ(파랑), 세로 길이가 cos θ(주황)입니다. 두 변과 반지름(1)이 직각삼각형을 이루니 피타고라스 정리로 sin²θ + cos²θ = 1² = 1. 각도가 바뀌어도 반지름은 그대로 1이므로 점은 항상 원 위에 있습니다.</p>
+  <canvas id="c4u" height="320"></canvas>
+  <div class="ctrls">
+    <div class="ctrl" style="max-width:420px"><label>θ (12시에서 시계 방향) <b id="d4uv">40°</b></label><input type="range" id="d4u" min="0" max="360" step="1" value="40"></div>
+  </div>
+  <div class="readout">
+    <div>sin θ (가로)<b id="d4us">—</b></div>
+    <div>cos θ (세로)<b id="d4uc">—</b></div>
+    <div>sin²θ + cos²θ<b id="d4usum">—</b></div>
+  </div>
+</div>
+
 <div class="eq">
   $$\theta = \omega_i \cdot pos$$
   <span class="note">단어 하나를 지날 때마다 바늘이 ω<sub>i</sub>만큼 돕니다. 0번 단어는 12시, 1번 단어는 ω<sub>i</sub>, 2번 단어는 2ω<sub>i</sub>만큼 돌아간 자리. 위치는 곧 바늘이 가리키는 방향입니다.</span>
@@ -482,6 +496,46 @@ function drawD3(){
 }
 $('#d3p').oninput=drawD3;$('#d3w').oninput=drawD3;
 
+/* ══════ 4절 단위원 그림 ══════ */
+var d4uGeo=null;
+function drawD4u(){
+  var t=+$('#d4u').value*Math.PI/180;$('#d4uv').textContent=$('#d4u').value+'°';
+  var g=setup($('#c4u')),c=g.c,R=Math.min(g.h/2-34,g.w/2-60),cx=g.w/2,cy=g.h/2+4;
+  d4uGeo={cx:cx,cy:cy};
+  var sn=Math.sin(t),cs=Math.cos(t),px=cx+sn*R,py=cy-cs*R;
+  var s1=css('--s1'),s2=css('--s2'),tp=css('--text-primary'),mu=css('--muted');
+  c.strokeStyle=css('--grid');c.lineWidth=1;c.beginPath();c.moveTo(cx-R-14,cy);c.lineTo(cx+R+14,cy);c.moveTo(cx,cy-R-14);c.lineTo(cx,cy+R+14);c.stroke();
+  c.strokeStyle=css('--axis');c.lineWidth=1.5;c.beginPath();c.arc(cx,cy,R,0,7);c.stroke();
+  c.fillStyle=mu;c.font='11px system-ui';c.textAlign='center';c.textBaseline='bottom';c.fillText('12시 (θ = 0)',cx,cy-R-16);
+  // θ 호
+  c.strokeStyle=css('--s4');c.lineWidth=2;c.beginPath();c.arc(cx,cy,26,-Math.PI/2,t-Math.PI/2,false);c.stroke();
+  c.fillStyle=css('--s4');c.font='600 12px system-ui';
+  c.fillText('θ',cx+Math.sin(t/2)*40,cy-Math.cos(t/2)*40+6);
+  // 직각삼각형: 가로 = sin, 세로 = cos
+  c.lineWidth=3.5;
+  c.strokeStyle=s2;c.beginPath();c.moveTo(cx,cy);c.lineTo(cx,py);c.stroke();
+  c.strokeStyle=s1;c.beginPath();c.moveTo(cx,py);c.lineTo(px,py);c.stroke();
+  c.strokeStyle=tp;c.lineWidth=2;c.beginPath();c.moveTo(cx,cy);c.lineTo(px,py);c.stroke();
+  if(Math.abs(sn)>0.08&&Math.abs(cs)>0.08){var q=9,dx=sn>0?q:-q,dy=cs>0?q:-q;
+    c.strokeStyle=mu;c.lineWidth=1;c.beginPath();c.moveTo(cx+dx,py);c.lineTo(cx+dx,py+dy);c.lineTo(cx,py+dy);c.stroke();}
+  c.fillStyle=tp;c.beginPath();c.arc(px,py,7,0,7);c.fill();
+  c.font='600 13px system-ui';c.textBaseline='middle';
+  c.fillStyle=s1;c.textAlign='center';c.fillText('sin θ = '+f(sn,2),(cx+px)/2,py+(cs>=0?-20:20));
+  c.fillStyle=s2;c.textAlign=sn>=0?'right':'left';c.fillText('cos θ = '+f(cs,2),cx+(sn>=0?-8:8),(cy+py)/2);
+  c.fillStyle=tp;c.textAlign=sn>=0?'left':'right';c.fillText('1',(cx+px)/2+(sn>=0?8:-8),(cy+py)/2+(cs>=0?8:-8));
+  c.font='12px system-ui';c.textAlign=sn>=0?'left':'right';c.fillText('(sin θ, cos θ)',px+(sn>=0?12:-12),py-12);
+  $('#d4us').textContent=f(sn,3);$('#d4uc').textContent=f(cs,3);
+  $('#d4usum').textContent=f(sn*sn,3)+' + '+f(cs*cs,3)+' = '+f(sn*sn+cs*cs,3);
+}
+$('#d4u').oninput=drawD4u;
+(function(){var cv=$('#c4u'),down=false;
+  function pick(e){if(!d4uGeo)return;var r=cv.getBoundingClientRect(),x=e.clientX-r.left-d4uGeo.cx,y=e.clientY-r.top-d4uGeo.cy;
+    var a=Math.round(Math.atan2(x,-y)*180/Math.PI);if(a<0)a+=360;$('#d4u').value=a;drawD4u();}
+  cv.addEventListener('pointerdown',function(e){down=true;cv.setPointerCapture(e.pointerId);pick(e);});
+  cv.addEventListener('pointermove',function(e){if(down)pick(e);});
+  cv.addEventListener('pointerup',function(){down=false;});
+})();
+
 /* ══════ 데모 4 : 시계 8개 ══════ */
 var d4timer=null;
 function drawD4(){
@@ -652,7 +706,7 @@ var QZ=[
 })();
 
 /* ══════ 테마·초기화 ══════ */
-function drawAll(){drawSW();drawD1();drawD2();drawD3();drawD4();drawD5();drawD5b();drawD6();drawD8();}
+function drawAll(){drawSW();drawD4u();drawD1();drawD2();drawD3();drawD4();drawD5();drawD5b();drawD6();drawD8();}
 var tbtn=$('#themeBtn');
 if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)document.documentElement.setAttribute('data-theme','dark');
 function syncBtn(){tbtn.textContent=document.documentElement.getAttribute('data-theme')==='dark'?'◑ 라이트':'◐ 다크';}
